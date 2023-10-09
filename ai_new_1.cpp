@@ -44,8 +44,8 @@ int main() {
     // Print the header
        meow << "p cnf " << numVariables << " " << numClauses << endl;
 
-//constraint 1 : a person can belong to only one graph  (not xi and not yi)       
-    //Clause 1: (x_i or y_i) for 1 < i < n
+//constraint 1 : a person can belong to only one graph  (not xi or not yi)       
+   
             for (int i = 1; i <= n; i++) {
                 meow<< "-"<<i << " -" << (i + n) << " 0" << endl;
             }
