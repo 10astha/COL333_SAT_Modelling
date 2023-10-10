@@ -40,17 +40,20 @@ int main() {
             int var;
             for(int i = 1; i <= n; i++){
                 opfile >> var;
-                
-                if (var > 0) {
+                int kk1=0;
+                if (var > 0 and kk1<=k1) {
                     G1 << var << " ";
+                    kk1++;
                 }
                 
             }
            
             for(int i=n+1;i<=2*n;i++){
                 opfile >> var;
-                if (var > 0) {
-                    G2 << var << " ";
+                int kk2=0;
+                if (var > 0 and kk2<=k2) {
+                    G2 << var-n << " ";
+                    kk2++;
                 }
             }
         } else {
