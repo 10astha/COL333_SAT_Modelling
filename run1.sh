@@ -17,7 +17,7 @@ if [ ! -f "$input_filename" ]; then
 fi
 
 # generate SAT input file
-g++ main.cpp MiniSAT.cpp -o SAT_inputfile_generator
+g++ main.cpp ai_new_1.cpp -o SAT_inputfile_generator
 ./SAT_inputfile_generator $input_filename $satinput_filename
 
 echo "SAT input file '$satinput_filename' generated."
