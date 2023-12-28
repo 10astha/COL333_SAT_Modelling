@@ -8,8 +8,9 @@ using namespace std;
 typedef pair<int, int> edge;
 map<edge , int> dict;
 
-int main(int argc, char *argv[]){
-    std::string filename = argv[1];
+int main(int argc, char *argv[]) {
+    string filename = argv[1];
+    // cout << "Filename: " << filename << "\n";
     std::string graph_file = filename + ".graph";
     std::string minisat_input = filename + ".satinput";
     std::string minisat_output = filename + ".satoutput";
@@ -42,14 +43,15 @@ int main(int argc, char *argv[]){
 
     int start = 1;
     int end = n;
-    while (start != end) {
-
+    int k1, k2;
+    int ans = 0;
+    while (start <= end ) {
+      
         std::ofstream meow{minisat_input};
        
-        
-        int mid = floor((start+end+1)/2);
-        int k1 = mid;
-        int k2 = n - k1;
+        int mid = floor((start+end)/2);
+        k1 = mid;
+        k2 = n - k1;
 
        int numVariables=n+(n-2)*(n-k1)+n-k1;
     int numClauses=(n*(n-1))/2-E+2*n*(n-k1)+n-3*(n-k1)-1 ; // need to verify
@@ -107,25 +109,72 @@ int main(int argc, char *argv[]){
         // If first line is SAT then we have obtained our required max clique
 
         if (sat_line.compare("SAT")==0){ // CHECK HIGHER
-            start = mid;
+            start = mid + 1;
             end = end;
+            ans=max(ans,mid);
+            
         }
-
         else {
             start = start;
             end = mid - 1;
-
         }
-
+       
         if (start == end){
-            break;
+           
         }
-
         minisat_output_file.close();
     }
+    std::ofstream meow{minisat_input};
+       
+    int mid = ans-1;
+    k1 = ans;
+    k2 = n - k1;
 
+    int numVariables=n+(n-2)*(n-k1)+n-k1;
+int numClauses=(n*(n-1))/2-E+2*n*(n-k1)+n-3*(n-k1)-1 ; // need to verify
+meow << "p cnf " << numVariables << " " << numClauses << endl;
+
+//constrain 2 : 
+
+    for (int i = 1; i <= n; ++i) {
+        for (int j = i + 1; j <= n; ++j) {
+            edge temp;temp.first=i;temp.second=j;
+            if(dict[temp]==0){
+                meow << "-" << i << " -" << j << " 0" << endl;
+        
+            } 
+        }
+    }
+
+    int offset = 2*n ; int k11=n-k1;
+// atleast k1 True=atmost n-k1 False,negated in both rhs and lhs and it converts to not xis have atmost n-k1 true
+    
+// Clause 1: ¬x1 ∨ s11
+    
+    meow << "1 " << 0*k11+offset+1 << " 0" << endl;
+    // Clause 2: ¬xn ∨ ¬s(n-1)k
+    meow <<   n << " -" << (n - 2) * k11 +k11+ offset << " 0" << endl;
+    // Clauses for ¬s1j for j in 1 to k
+    for (int j = 2; j <= k11; ++j) {
+        meow << "-" << 0*k11+j +offset<< " 0"<<endl;
+    }
+    // Clauses for ¬xi ∨ si1, ¬si-11 ∨ si1, ¬xi ∨ ¬si-1k
+    for (int i = 2; i < n; ++i) {
+        meow  << i << " " << (i-1) * k11 + 1 + offset << " 0" << std::endl;
+        meow << "-" << (i - 2) * k11 + 1 + offset << " " << (i-1) * k11+ 1 + offset << " 0" << std::endl;
+        meow  << i << " -" << (i - 2) * k11 + k11 + offset << " 0" << std::endl;
+    // Clauses for ¬xi ∨ sij ∨ ¬si-1(j-1), ¬si-1j ∨ sij
+        for (int j = 2; j <= k11; ++j) {
+            meow <<  i << " " << (i-1) * k11 + j + offset<< " -" << (i - 2) * k11+ j - 1 + offset << " 0" << std::endl;
+            meow << "-" << (i - 2) * k11 + j + offset << " " << (i-1) * k11 + j +offset << " 0" << std::endl;
+        }
+    }
+
+    meow.close();
+    std::string minisat_command = "minisat " + minisat_input + " " + minisat_output;
+    system(minisat_command.c_str()); //._c_str to convert into const char* type that system() requires
     // Now write onto mapping
-
+   
     std::ifstream minisat_output_file(minisat_output);
     std::ofstream mapping_file(mapping); 
 
@@ -134,18 +183,22 @@ int main(int argc, char *argv[]){
 
     mapping_file << "#1" << endl;
     
-    int k=0;
-    for (int count=0;count<=n;count++){
-        int literal;
-        minisat_output_file >> literal;
-       
-        k += 1;
-        if (k != 1){
-            mapping_file << " ";
-        }
-        if (literal > 0){
+   
+    int var;
+    // cout << "k1: " << k1 << " k2: " << k2 << endl;
+    int kk1=1;
+    for(int i = 1; i <= n; i++){
+        minisat_output_file >> var;
         
-        mapping_file << literal<< " ";}
+        if (var > 0 and kk1<k1) {
+            // cout << "Var: " << var << endl;
+            mapping_file << var << " ";
+            kk1++;
+        } else if (var > 0 and kk1==k1) {
+            mapping_file << var;
+            kk1++;
+        }
+        
     }
 
     mapping_file << endl;
