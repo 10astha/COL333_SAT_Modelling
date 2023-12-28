@@ -3,10 +3,11 @@
 using namespace std;
 typedef pair<int, int> edge;
 map<edge , int> mapping;
-int main() {
+int main(int argc, char *argv[]) {
     // Specify the value of n
     int n,E,k1,k2;
-    string inputfilename ("test.graph");
+    string filename = argv[1];
+    string inputfilename = filename + ".graph";
     fstream ipfile;
     ipfile.open(inputfilename, ios::in);
     if (!ipfile) {
@@ -119,7 +120,7 @@ int main() {
             }
         }
 
-    string outputfilename ("test.satinput");
+    string outputfilename = filename+".satinput";
     ofstream outputFile(outputfilename);
 
     // Check if the file is opened successfully
